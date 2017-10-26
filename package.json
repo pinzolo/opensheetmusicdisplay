@@ -58,7 +58,7 @@
   "devDependencies": {
     "@types/chai": "^4.0.3",
     "@types/loglevel": "^1.4.29",
-    "@types/mocha": "^2.2.40",
+    "@types/mocha": "^2.2.44",
     "browserify": "^14.0.0",
     "chai": "^4.1.0",
     "cz-conventional-changelog": "^2.0.0",
