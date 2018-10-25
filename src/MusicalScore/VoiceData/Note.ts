@@ -1,4 +1,4 @@
-import {VoiceEntry} from "./VoiceEntry";
+import {VoiceEntry, StemDirectionType} from "./VoiceEntry";
 import {SourceStaffEntry} from "./SourceStaffEntry";
 import {Fraction} from "../../Common/DataObjects/Fraction";
 import {Pitch} from "../../Common/DataObjects/Pitch";
@@ -8,6 +8,8 @@ import {Tie} from "./Tie";
 import {Staff} from "./Staff";
 import {Slur} from "./Expressions/ContinuousExpressions/Slur";
 import {NoteState} from "../Graphical/DrawingEnums";
+import {NoteHead} from "./NoteHead";
+import {Arpeggio} from "./Arpeggio";
 
 /**
  * Represents a single pitch with a duration (length)
@@ -42,15 +44,17 @@ export class Note {
     private tuplet: Tuplet;
     private tie: Tie;
     private slurs: Slur[] = [];
-    private graceNoteSlash: boolean = false;
     private playbackInstrumentId: string = undefined;
+    private noteHead: NoteHead = undefined;
+    /** States whether the note should be displayed. False if xmlNode.attribute("print-object").value = "no". */
+    private printObject: boolean = true;
+    /** The Arpeggio this note is part of. */
+    private arpeggio: Arpeggio;
+    /** States whether this is a cue note (Stichnote) (smaller size). */
+    private isCueNote: boolean;
+    /** The stem direction asked for in XML. Not necessarily final or wanted stem direction. */
+    private stemDirectionXml: StemDirectionType;
 
-    public get GraceNoteSlash(): boolean {
-        return this.graceNoteSlash;
-    }
-    public set GraceNoteSlash(value: boolean) {
-        this.graceNoteSlash = value;
-    }
     public get ParentVoiceEntry(): VoiceEntry {
         return this.voiceEntry;
     }
@@ -102,34 +106,41 @@ export class Note {
     public set PlaybackInstrumentId(value: string) {
         this.playbackInstrumentId = value;
     }
+    public set NoteHead(value: NoteHead) {
+        this.noteHead = value;
+    }
+    public get NoteHead(): NoteHead {
+        return this.noteHead;
+    }
+    public get PrintObject(): boolean {
+        return this.printObject;
+    }
+    public set PrintObject(value: boolean) {
+        this.printObject = value;
+    }
+    public get Arpeggio(): Arpeggio {
+        return this.arpeggio;
+    }
+    public set Arpeggio(value: Arpeggio) {
+        this.arpeggio = value;
+    }
+    public get IsCueNote(): boolean {
+        return this.isCueNote;
+    }
+    public set IsCueNote(value: boolean) {
+        this.isCueNote = value;
+    }
+    public get StemDirectionXml(): StemDirectionType {
+        return this.stemDirectionXml;
+    }
+    public set StemDirectionXml(value: StemDirectionType) {
+        this.stemDirectionXml = value;
+    }
 
     public isRest(): boolean {
         return this.Pitch === undefined;
     }
 
-    public calculateNoteLengthWithoutTie(): Fraction {
-        const withoutTieLength: Fraction = this.length.clone();
-        if (this.tie !== undefined) {
-            for (const fraction of this.tie.Fractions) {
-                withoutTieLength.Sub(fraction);
-            }
-        }
-        return withoutTieLength;
-    }
-    public calculateNoteOriginalLength(originalLength: Fraction = this.length): Fraction {
-        if (this.tie !== undefined) {
-            originalLength = this.calculateNoteLengthWithoutTie();
-        }
-        if (this.tuplet !== undefined) {
-            return this.length;
-        }
-        if (originalLength.Numerator > 1) {
-            const exp: number = Math.floor(Math.log(originalLength.Denominator) / Math.LN2) - this.calculateNumberOfNeededDots(originalLength);
-            originalLength.Denominator = Math.pow(2, exp);
-            originalLength.Numerator = 1;
-        }
-        return originalLength;
-    }
     public ToString(): string {
         if (this.pitch !== undefined) {
             return this.Pitch.ToString() + ", length: " + this.length.toString();
@@ -156,37 +167,6 @@ export class Note {
         }
         return false;
     }
-
-    //public calculateTailSymbol(): number {
-    //    let length: number = this.Length.RealValue;
-    //    if (this.NoteTuplet) {
-    //        length = this.NoteTuplet.Fractions[this.NoteTuplet.getNoteIndex(this)].RealValue;
-    //    }
-    //    if (length < 0.25 && length >= 0.125) {
-    //        return 8;
-    //    } else if (length < 0.125 && length >= 0.0625) {
-    //        return 16;
-    //    } else if (length < 0.0625 && length >= 0.03125) {
-    //        return 32;
-    //    } else {
-    //        return 64;
-    //    }
-    //}
-
-    /**
-     * Return the number of dots needed to represent the given [[Fraction]].
-     * @param fraction
-     * @returns {number}
-     */
-    private calculateNumberOfNeededDots(fraction: Fraction = this.length): number {
-        // FIXME (Andrea) Test if correct
-        if (this.tuplet === undefined) {
-            return Math.floor(Math.log(fraction.Numerator) / Math.LN2);
-        } else {
-            return 0;
-        }
-    }
-
 }
 
 export enum Appearance {

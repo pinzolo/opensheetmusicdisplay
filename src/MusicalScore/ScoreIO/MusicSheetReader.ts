@@ -6,7 +6,7 @@ import {IXmlElement} from "../../Common/FileIO/Xml";
 import {Instrument} from "../Instrument";
 import {ITextTranslation} from "../Interfaces/ITextTranslation";
 import {MusicSheetReadingException} from "../Exceptions";
-import {Logging} from "../../Common/Logging";
+import * as log from "loglevel";
 import {IXmlAttribute} from "../../Common/FileIO/Xml";
 import {RhythmInstruction} from "../VoiceData/Instructions/RhythmInstruction";
 import {RhythmSymbolEnum} from "../VoiceData/Instructions/RhythmInstruction";
@@ -63,7 +63,8 @@ export class MusicSheetReader /*implements IMusicSheetReader*/ {
         try {
             return this._createMusicSheet(root, path);
         } catch (e) {
-            Logging.log("MusicSheetReader.CreateMusicSheet", e);
+            log.info("MusicSheetReader.CreateMusicSheet", e);
+            return undefined;
         }
     }
 
@@ -373,8 +374,8 @@ export class MusicSheetReader /*implements IMusicSheetReader*/ {
             ) {
                 const firstStaffIndexOfInstrument: number = this.musicSheet.getGlobalStaffIndexOfFirstStaff(this.musicSheet.Instruments[i]);
                 for (let staffIndex: number = 0; staffIndex < this.musicSheet.Instruments[i].Staves.length; staffIndex++) {
-                    if (!this.staffMeasureIsEmpty(firstStaffIndexOfInstrument + staffIndex)) {
-                        this.currentMeasure.setErrorInStaffMeasure(firstStaffIndexOfInstrument + staffIndex, true);
+                    if (!this.graphicalMeasureIsEmpty(firstStaffIndexOfInstrument + staffIndex)) {
+                        this.currentMeasure.setErrorInGraphicalMeasure(firstStaffIndexOfInstrument + staffIndex, true);
                         const errorMsg: string = ITextTranslation.translateText("ReaderErrorMessages/MissingNotesError",
                                                                                 "Given Notes don't correspond to measure duration.");
                         this.musicSheet.SheetErrors.pushMeasureError(errorMsg);
@@ -432,7 +433,7 @@ export class MusicSheetReader /*implements IMusicSheetReader*/ {
         return (counter === instrumentsDurations.length && maxInstrumentDuration !== new Fraction(0, 1));
     }
 
-    private staffMeasureIsEmpty(index: number): boolean {
+    private graphicalMeasureIsEmpty(index: number): boolean {
         let counter: number = 0;
         for (let i: number = 0; i < this.currentMeasure.VerticalSourceStaffEntryContainers.length; i++) {
             if (this.currentMeasure.VerticalSourceStaffEntryContainers[i].StaffEntries[index] === undefined) {
@@ -486,21 +487,24 @@ export class MusicSheetReader /*implements IMusicSheetReader*/ {
     private pushSheetLabels(root: IXmlElement, filePath: string): void {
         this.readComposer(root);
         this.readTitle(root);
-        if (this.musicSheet.Title === undefined || this.musicSheet.Composer === undefined) {
-            this.readTitleAndComposerFromCredits(root);
+        try {
+            if (this.musicSheet.Title === undefined || this.musicSheet.Composer === undefined) {
+                this.readTitleAndComposerFromCredits(root); // this can also throw an error
+            }
+        } catch (ex) {
+            log.info("MusicSheetReader.pushSheetLabels", "readTitleAndComposerFromCredits", ex);
         }
-        if (this.musicSheet.Title === undefined) {
-            try {
+        try {
+            if (this.musicSheet.Title === undefined) {
                 const barI: number = Math.max(
                     0, filePath.lastIndexOf("/"), filePath.lastIndexOf("\\")
                 );
                 const filename: string = filePath.substr(barI);
                 const filenameSplits: string[] = filename.split(".", 1);
                 this.musicSheet.Title = new Label(filenameSplits[0]);
-            } catch (ex) {
-                Logging.log("MusicSheetReader.pushSheetLabels: ", ex);
             }
-
+        } catch (ex) {
+            log.info("MusicSheetReader.pushSheetLabels", "read title from file name", ex);
         }
     }
 
@@ -611,8 +615,13 @@ export class MusicSheetReader /*implements IMusicSheetReader*/ {
         }
         let paperHeight: number = 0;
         let topSystemDistance: number = 0;
-        const defi: string = root.element("defaults").element("page-layout").element("page-height").value;
-        paperHeight = parseFloat(defi);
+        try {
+            const defi: string = root.element("defaults").element("page-layout").element("page-height").value;
+            paperHeight = parseFloat(defi);
+        } catch (e) {
+            log.info("MusicSheetReader.computeSystemYCoordinates(): couldn't find page height, not reading title/composer.");
+            return 0;
+        }
         let found: boolean = false;
         const parts: IXmlElement[] = root.elements("part");
         for (let idx: number = 0, len: number = parts.length; idx < len; ++idx) {
@@ -744,29 +753,29 @@ export class MusicSheetReader /*implements IMusicSheetReader*/ {
                                             subInstrument.fixedKey = Math.max(0, parseInt(instrumentElement.value, 10));
                                         } else if (instrumentElement.name === "volume") {
                                             try {
-                                                const result: number = <number>parseFloat(instrumentElement.value);
+                                                const result: number = parseFloat(instrumentElement.value);
                                                 subInstrument.volume = result / 127.0;
                                             } catch (ex) {
-                                                Logging.debug("ExpressionReader.readExpressionParameters", "read volume", ex);
+                                                log.debug("ExpressionReader.readExpressionParameters", "read volume", ex);
                                             }
 
                                         } else if (instrumentElement.name === "pan") {
                                             try {
-                                                const result: number = <number>parseFloat(instrumentElement.value);
+                                                const result: number = parseFloat(instrumentElement.value);
                                                 subInstrument.pan = result / 64.0;
                                             } catch (ex) {
-                                                Logging.debug("ExpressionReader.readExpressionParameters", "read pan", ex);
+                                                log.debug("ExpressionReader.readExpressionParameters", "read pan", ex);
                                             }
 
                                         }
                                     } catch (ex) {
-                                        Logging.log("MusicSheetReader.createInstrumentGroups midi settings: ", ex);
+                                        log.info("MusicSheetReader.createInstrumentGroups midi settings: ", ex);
                                     }
 
                                 }
                             }
                         } catch (ex) {
-                            Logging.log("MusicSheetReader.createInstrumentGroups: ", ex);
+                            log.info("MusicSheetReader.createInstrumentGroups: ", ex);
                         }
 
                     }

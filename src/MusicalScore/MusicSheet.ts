@@ -16,7 +16,7 @@ import {EngravingRules} from "./Graphical/EngravingRules";
 import {NoteState} from "./Graphical/DrawingEnums";
 import {Note} from "./VoiceData/Note";
 import {VoiceEntry} from "./VoiceData/VoiceEntry";
-import {Logging} from "../Common/Logging";
+import * as log from "loglevel";
 
 // FIXME Andrea: Commented out some unnecessary/not-ported-yet code, have a look at (*)
 
@@ -400,7 +400,7 @@ export class MusicSheet /*implements ISettableMusicSheet, IComparable<MusicSheet
     //        }
     //        return repetitions;
     //    } catch (ex) {
-    //        Logging.log("MusicSheet.IRepetitions get: ", ex);
+    //        log.info("MusicSheet.IRepetitions get: ", ex);
     //        return undefined;
     //    }
     //
@@ -408,8 +408,8 @@ export class MusicSheet /*implements ISettableMusicSheet, IComparable<MusicSheet
     //public GetExpressionsStartTempoInBPM(): number {
     //    if (this.TimestampSortedTempoExpressionsList.length > 0) {
     //        let me: MultiTempoExpression = this.TimestampSortedTempoExpressionsList[0];
-    //        if (me.InstantaniousTempo !== undefined) {
-    //            return me.InstantaniousTempo.TempoInBpm;
+    //        if (me.InstantaneousTempo !== undefined) {
+    //            return me.InstantaneousTempo.TempoInBpm;
     //        } else if (me.ContinuousTempo !== undefined) {
     //            return me.ContinuousTempo.StartTempo;
     //        }
@@ -423,7 +423,7 @@ export class MusicSheet /*implements ISettableMusicSheet, IComparable<MusicSheet
         try {
             return this.getFirstSourceMeasure().MeasureNumber;
         } catch (ex) {
-            Logging.log("MusicSheet.FirstMeasureNumber: ", ex);
+            log.info("MusicSheet.FirstMeasureNumber: ", ex);
             return 0;
         }
 
@@ -432,7 +432,7 @@ export class MusicSheet /*implements ISettableMusicSheet, IComparable<MusicSheet
         try {
             return this.getLastSourceMeasure().MeasureNumber;
         } catch (ex) {
-            Logging.log("MusicSheet.LastMeasureNumber: ", ex);
+            log.info("MusicSheet.LastMeasureNumber: ", ex);
             return 0;
         }
 
@@ -457,11 +457,11 @@ export class MusicSheet /*implements ISettableMusicSheet, IComparable<MusicSheet
     //        let oldValue: Object = 0;
     //        if (parameter === undefined) { // FIXME MusicSheetParameters.MusicSheetTranspose) {
     //            oldValue = this.Transpose;
-    //            this.Transpose = <number>value;
+    //            this.Transpose = value;
     //        }
     //        if (parameter === undefined) { // FIXME MusicSheetParameters.StartTempoInBPM) {
     //            oldValue = this.UserStartTempoInBPM;
-    //            this.UserStartTempoInBPM = <number>value;
+    //            this.UserStartTempoInBPM = value;
     //        }
     //        if (parameter === undefined) { // FIXME MusicSheetParameters.HighlightErrors) {
     //            oldValue = value;

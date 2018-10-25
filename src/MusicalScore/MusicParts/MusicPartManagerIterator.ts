@@ -11,10 +11,10 @@ import {RhythmInstruction} from "../VoiceData/Instructions/RhythmInstruction";
 import {AbstractNotationInstruction} from "../VoiceData/Instructions/AbstractNotationInstruction";
 import {RepetitionInstruction} from "../VoiceData/Instructions/RepetitionInstruction";
 import {ContinuousDynamicExpression} from "../VoiceData/Expressions/ContinuousExpressions/ContinuousDynamicExpression";
-import {InstantaniousDynamicExpression} from "../VoiceData/Expressions/InstantaniousDynamicExpression";
+import {InstantaneousDynamicExpression} from "../VoiceData/Expressions/InstantaneousDynamicExpression";
 import {MultiTempoExpression} from "../VoiceData/Expressions/MultiTempoExpression";
 import {AbstractExpression} from "../VoiceData/Expressions/AbstractExpression";
-import {Logging} from "../../Common/Logging";
+import * as log from "loglevel";
 
 export class MusicPartManagerIterator {
     constructor(manager: MusicPartManager, startTimestamp?: Fraction, endTimestamp?: Fraction) {
@@ -39,15 +39,15 @@ export class MusicPartManagerIterator {
                             <ContinuousDynamicExpression>this.activeDynamicExpressions[staffIndex];
                         this.currentDynamicChangingExpressions.push(new DynamicsContainer(continuousDynamic, staffIndex));
                     } else {
-                        const instantaniousDynamic: InstantaniousDynamicExpression =
-                            <InstantaniousDynamicExpression>this.activeDynamicExpressions[staffIndex];
-                        this.currentDynamicChangingExpressions.push(new DynamicsContainer(instantaniousDynamic, staffIndex));
+                        const instantaneousDynamic: InstantaneousDynamicExpression =
+                            <InstantaneousDynamicExpression>this.activeDynamicExpressions[staffIndex];
+                        this.currentDynamicChangingExpressions.push(new DynamicsContainer(instantaneousDynamic, staffIndex));
                     }
                 }
             }
             this.currentTempoChangingExpression = this.activeTempoExpression;
         } catch (err) {
-            Logging.log("MusicPartManagerIterator: " + err);
+            log.info("MusicPartManagerIterator: " + err);
         }
 
     }
@@ -446,9 +446,9 @@ export class MusicPartManagerIterator {
                         this.currentDynamicChangingExpressions.push(new DynamicsContainer(continuousDynamic, staffIndex));
                     }
                 } else {
-                    const instantaniousDynamic: InstantaniousDynamicExpression = <InstantaniousDynamicExpression>this.activeDynamicExpressions[staffIndex];
-                    if (this.CurrentSourceTimestamp.Equals(instantaniousDynamic.ParentMultiExpression.AbsoluteTimestamp)) {
-                        this.currentDynamicChangingExpressions.push(new DynamicsContainer(instantaniousDynamic, staffIndex));
+                    const instantaneousDynamic: InstantaneousDynamicExpression = <InstantaneousDynamicExpression>this.activeDynamicExpressions[staffIndex];
+                    if (this.CurrentSourceTimestamp.Equals(instantaneousDynamic.ParentMultiExpression.AbsoluteTimestamp)) {
+                        this.currentDynamicChangingExpressions.push(new DynamicsContainer(instantaneousDynamic, staffIndex));
                     }
                 }
             }

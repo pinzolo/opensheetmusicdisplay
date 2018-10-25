@@ -50,6 +50,11 @@ export class Fraction {
     return sum;
   }
 
+    public static multiply (f1: Fraction, f2: Fraction): Fraction {
+        return new Fraction ( (f1.wholeValue * f1.denominator + f1.numerator) * (f2.wholeValue * f2.denominator + f2.numerator),
+                              f1.denominator * f2.denominator);
+    }
+
   private static greatestCommonDenominator(a: number, b: number): number {
     if (a === 0) {
       return b;
@@ -170,6 +175,12 @@ export class Fraction {
   //   this.setRealValue();
   // }
 
+  /**
+   * Adds a Fraction to this Fraction.
+   * Attention: This changes the already existing Fraction, which might be referenced elsewhere!
+   * Use Fraction.plus() for creating a new Fraction object being the sum of two Fractions.
+   * @param fraction the Fraction to add.
+   */
   public Add(fraction: Fraction): void {
     // normally should check if denominator or fraction.denominator is 0 but in our case
     // a zero denominator doesn't make sense
@@ -181,6 +192,12 @@ export class Fraction {
     this.setRealValue();
   }
 
+  /**
+   * Subtracts a Fraction from this Fraction.
+   * Attention: This changes the already existing Fraction, which might be referenced elsewhere!
+   * Use Fraction.minus() for creating a new Fraction object being the difference of two Fractions.
+   * @param fraction the Fraction to subtract.
+   */
   public Sub(fraction: Fraction): void {
     // normally should check if denominator or fraction.denominator is 0 but in our case
     // a zero denominator doesn't make sense
@@ -244,7 +261,7 @@ export class Fraction {
   //        return true;
   //    if (ReferenceEquals(f, undefined))
   //        return false;
-  //    return <number>this.numerator * f.denominator === <number>f.numerator * this.denominator;
+  //    return this.numerator * f.denominator === f.numerator * this.denominator;
   //}
 
   private setRealValue(): void {
@@ -274,20 +291,20 @@ export class Fraction {
       }
     }
     if (this.denominator > Fraction.maximumAllowedNumber) {
-      const factor: number = <number>this.denominator / Fraction.maximumAllowedNumber;
-      this.numerator = <number>Math.round(this.numerator / factor);
-      this.denominator = <number>Math.round(this.denominator / factor);
+      const factor: number = this.denominator / Fraction.maximumAllowedNumber;
+      this.numerator = Math.round(this.numerator / factor);
+      this.denominator = Math.round(this.denominator / factor);
     }
     if (this.numerator > Fraction.maximumAllowedNumber) {
-      const factor: number = <number>this.numerator / Fraction.maximumAllowedNumber;
-      this.numerator = <number>Math.round(this.numerator / factor);
-      this.denominator = <number>Math.round(this.denominator / factor);
+      const factor: number = this.numerator / Fraction.maximumAllowedNumber;
+      this.numerator = Math.round(this.numerator / factor);
+      this.denominator = Math.round(this.denominator / factor);
     }
   }
 
 
   //private static equals(f1: Fraction, f2: Fraction): boolean {
-  //    return <number>f1.numerator * f2.denominator === <number>f2.numerator * f1.denominator;
+  //    return f1.numerator * f2.denominator === f2.numerator * f1.denominator;
   //}
   //
   //public static ApproximateFractionFromValue(value: number, epsilonForPrecision: number): Fraction {
@@ -300,9 +317,9 @@ export class Fraction {
   //        }
   //        else {
   //            d++;
-  //            n = <number>Math.round(value * d);
+  //            n = Math.round(value * d);
   //        }
-  //        fraction = n / <number>d;
+  //        fraction = n / d;
   //    }
   //    return new Fraction(n, d);
   //}
@@ -313,7 +330,7 @@ export class Fraction {
   //}
 
   //public static getFraction(value: number, denominatorPrecision: number): Fraction {
-  //    let numerator: number = <number>Math.round(value / (1.0 / denominatorPrecision));
+  //    let numerator: number = Math.round(value / (1.0 / denominatorPrecision));
   //    return new Fraction(numerator, denominatorPrecision);
   //}
   //public static fractionMin(f1: Fraction, f2: Fraction): Fraction {
